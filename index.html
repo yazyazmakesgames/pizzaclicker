@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pizza Clicker 🍕</title>
+<style>
+:root{--bg:#17110f;--panel:#241b17;--panel2:#30231d;--text:#fff5e9;--muted:#c6b3a2;--red:#ed6845;--gold:#ffd166;--green:#8bd3a8}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#44251b 0%,var(--bg) 58%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;padding:24px 14px 40px}
+.wrap{max-width:1000px;margin:0 auto}
+header{text-align:center;margin:8px 0 22px}
+.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--gold);font-weight:800}
+h1{font-size:clamp(2.1rem,6vw,3.7rem);margin:5px 0;line-height:1.1}
+.subtitle{color:var(--muted);margin:8px 0}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.stat,.panel{background:rgba(36,27,23,.95);border:1px solid #5b4031;border-radius:18px;padding:15px}
+.label{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+.value{font-size:clamp(1.2rem,3vw,1.8rem);font-weight:900;margin-top:4px;overflow-wrap:anywhere}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px;align-items:start}
+.panel h2{margin:0 0 12px;font-size:1.2rem}
+.pizza-area{text-align:center;display:flex;flex-direction:column;align-items:center;padding:22px 14px}
+.pizza{position:relative;display:grid;place-items:center;width:min(62vw,280px);aspect-ratio:1;border:0;border-radius:50%;cursor:pointer;background:radial-gradient(circle,#f5cc73 0 57%,#a84b28 58% 63%,#f4b951 64% 70%,#79351f 71% 75%,#d17b39 76%);box-shadow:0 10px 0 #6b321d,0 18px 35px #0006;transition:transform .08s;touch-action:manipulation}
+.pizza:active{transform:scale(.94) rotate(-3deg)}
+.pizza:focus-visible,.buy:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+.pizza .emoji{font-size:clamp(5.2rem,17vw,9rem);filter:drop-shadow(0 4px 1px #69351e)}
+.click-note{min-height:28px;font-weight:800;color:var(--gold);margin:20px 0 4px}
+.small{font-size:.85rem;color:var(--muted)}
+.shop-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.buy{width:100%;height:100%;min-height:116px;text-align:left;padding:12px;background:var(--panel2);border:1px solid #5b4031;border-radius:13px;color:var(--text);cursor:pointer;transition:background .15s,transform .1s}
+.buy:not(:disabled):hover{background:#493126;transform:translateY(-2px)}
+.buy:disabled{opacity:.45;cursor:not-allowed}
+.buy-top{display:flex;gap:6px;justify-content:space-between;align-items:flex-start}
+.buy-name{font-weight:850;font-size:.94rem}
+.level{font-size:.7rem;color:var(--gold);white-space:nowrap}
+.desc{font-size:.8rem;color:var(--muted);margin-top:7px}
+.cost{font-weight:900;color:var(--gold);margin-top:10px}
+.bottom{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+button.reset{background:transparent;color:var(--muted);border:1px solid #5b4031;border-radius:10px;padding:9px 12px;cursor:pointer}
+.progress{height:9px;background:#49372c;border-radius:9px;overflow:hidden;margin:10px 0}
+.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--gold));transition:width .2s}
+.achievement{color:var(--green);font-weight:750}
+footer{text-align:center;color:var(--muted);font-size:.78rem;margin-top:18px}
+@media(max-width:680px){body{padding:16px 10px 28px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.layout{grid-template-columns:1fr}.shop-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.stat,.panel{padding:13px}}
+@media(max-width:370px){.shop-grid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="eyebrow">The Pizzeria Tycoon</div><h1>🍕 Pizza Clicker</h1><p class="subtitle">Click. Upgrade. Become the ruler of pizza.</p></header>
+<section class="stats" aria-label="Game stats">
+<div class="stat"><div class="label">Pizza coins</div><div class="value" id="coins">0</div></div>
+<div class="stat"><div class="label">Coins per click</div><div class="value" id="power">1</div></div>
+<div class="stat"><div class="label">Coins per second</div><div class="value" id="cps">0</div></div>
+<div class="stat"><div class="label">Total clicks</div><div class="value" id="clicks">0</div></div>
+</section>
+<div class="layout">
+<section class="panel pizza-area">
+<div class="label">Your delicious fortune</div>
+<button class="pizza" id="pizza" type="button" aria-label="Click the pizza to earn pizza coins"><span class="emoji">🍕</span></button>
+<div class="click-note" id="clickmsg" aria-live="polite">CLICK THE PIZZA!</div>
+<div class="small">Every click earns coins. Upgrades make you unstoppable.</div>
+</section>
+<section class="panel"><h2>🛒 Upgrade shop</h2><div class="shop-grid" id="upgrades"></div></section>
+<section class="panel" style="grid-column:1/-1">
+<h2>🏆 Pizza progress</h2><div class="bottom" style="margin-top:0"><span class="small">Next milestone</span><strong id="nextlabel">100 coins</strong></div>
+<div class="progress"><div class="progress-fill" id="progress"></div></div>
+<div id="milestone" class="achievement">Earn 100 coins to become a Pizza Rookie!</div>
+<div class="bottom"><span class="small">Upgrades owned: <strong id="owned">0</strong> · Lifetime coins: <strong id="lifetime">0</strong></span><button class="reset" id="reset" type="button">Reset game</button></div>
+</section>
+</div>
+<footer>Your progress saves automatically in this browser. 🍅</footer>
+</div>
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const defs=[
+{name:'🍴 Pizza Cutter',desc:'+1 coin per click',base:15,kind:'click',gain:1},
+{name:'🧀 Extra Cheese',desc:'+3 coins per click',base:60,kind:'click',gain:3},
+{name:'👨‍🍳 Pizza Chef',desc:'+1 coin every second',base:40,kind:'auto',gain:1},
+{name:'🔥 Brick Oven',desc:'+5 coins every second',base:180,kind:'auto',gain:5},
+{name:'🐈 Delivery Cat',desc:'+18 coins every second',base:650,kind:'auto',gain:18},
+{name:'🏭 Pizza Factory',desc:'+75 coins every second',base:2500,kind:'auto',gain:75},
+{name:'🌶️ Legendary Chili Oil',desc:'+25 coins per click',base:1200,kind:'click',gain:25},
+{name:'🛸 Alien Pizza Machine',desc:'+350 coins every second',base:12000,kind:'auto',gain:350}
+];
+const milestones=[{n:100,name:'Pizza Rookie'},{n:1000,name:'Cheese Boss'},{n:10000,name:'Pizza Millionaire (almost)'},{n:100000,name:'Pizzeria Legend'},{n:1000000,name:'Pizza Overlord'}];
+let state={coins:0,lifetime:0,clicks:0,power:1,cps:0,levels:defs.map(()=>0)};
+function fmt(n){if(n<1000)return Math.floor(n).toLocaleString();const units=['K','M','B','T','Qa','Qi'];let i=-1;while(n>=1000&&i<units.length-1){n/=1000;i++}return n.toFixed(n<10?1:0)+units[i]}
+function cost(i){return Math.floor(defs[i].base*Math.pow(1.65,state.levels[i]))}
+function save(){try{localStorage.setItem('pizzaClickerSave',JSON.stringify(state))}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem('pizzaClickerSave'));if(s&&Array.isArray(s.levels)&&s.levels.length===defs.length&&Number.isFinite(s.coins)&&Number.isFinite(s.lifetime)){state={...state,...s};state.levels=state.levels.map(n=>Math.max(0,Math.floor(Number(n)||0)));state.coins=Math.max(0,state.coins);state.lifetime=Math.max(0,state.lifetime);state.clicks=Math.max(0,Math.floor(state.clicks||0));recalc()}}catch(e){}}
+function recalc(){state.power=1;state.cps=0;defs.forEach((d,i)=>{if(d.kind==='click')state.power+=d.gain*state.levels[i];else state.cps+=d.gain*state.levels[i]})}
+function makeShop(){defs.forEach((d,i)=>{const b=document.createElement('button');b.type='button';b.className='buy';b.dataset.i=i;b.innerHTML=`<div class="buy-top"><span class="buy-name">${d.name}</span><span class="level">Lv. <span data-level>0</span></span></div><div class="desc">${d.desc}</div><div class="cost" data-cost>🪙 ${fmt(d.base)}</div>`;b.addEventListener('click',()=>buy(i));$('upgrades').appendChild(b)})}
+function buy(i){const c=cost(i);if(state.coins<c)return;state.coins-=c;state.levels[i]++;recalc();$('clickmsg').textContent='UPGRADE BOUGHT! '+defs[i].name;render();save()}
+function render(){
+$('coins').textContent=fmt(state.coins);$('power').textContent=fmt(state.power);$('cps').textContent=fmt(state.cps);$('clicks').textContent=fmt(state.clicks);$('lifetime').textContent=fmt(state.lifetime);$('owned').textContent=state.levels.reduce((a,b)=>a+b,0);
+document.querySelectorAll('.buy[data-i]').forEach(b=>{const i=+b.dataset.i;b.disabled=state.coins<cost(i);b.querySelector('[data-level]').textContent=state.levels[i];b.querySelector('[data-cost]').textContent='🪙 '+fmt(cost(i))});
+const m=milestones.find(x=>state.lifetime<x.n);
+if(!m){$('nextlabel').textContent='MAXIMUM PIZZA LEGEND';$('milestone').textContent='You conquered the pizza universe. Keep earning!';$('progress').style.width='100%'}
+else{const prev=milestones[milestones.indexOf(m)-1]?.n||0;$('nextlabel').textContent=fmt(m.n)+' coins';$('milestone').textContent=fmt(m.n-state.lifetime)+' coins until '+m.name+'!';$('progress').style.width=Math.min(100,Math.max(0,(state.lifetime-prev)/(m.n-prev)*100))+'%'}
+}
+$('pizza').addEventListener('click',()=>{state.coins+=state.power;state.lifetime+=state.power;state.clicks++;$('clickmsg').textContent='+'+fmt(state.power)+' PIZZA COINS!';render();save()});
+$('reset').addEventListener('click',()=>{if(!confirm('Reset all coins and upgrades? This cannot be undone.'))return;state={coins:0,lifetime:0,clicks:0,power:1,cps:0,levels:defs.map(()=>0)};render();save();$('clickmsg').textContent='CLICK THE PIZZA!'});
+makeShop();load();render();
+let last=Date.now();setInterval(()=>{const now=Date.now(),dt=Math.min((now-last)/1000,2);last=now;if(state.cps>0){const gain=state.cps*dt;state.coins+=gain;state.lifetime+=gain;render();save()}},250);
+})();
+</script>
+</body>
+</html>
