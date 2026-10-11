@@ -105,7 +105,24 @@ $('pizza').addEventListener('click',()=>{state.coins+=state.power;state.lifetime
 $('reset').addEventListener('click',()=>{if(!confirm('Reset all coins and upgrades? This cannot be undone.'))return;state={coins:0,lifetime:0,clicks:0,power:1,cps:0,levels:defs.map(()=>0)};render();save();$('clickmsg').textContent='CLICK THE PIZZA!'});
 makeShop();load();render();
 let last=Date.now();setInterval(()=>{const now=Date.now(),dt=Math.min((now-last)/1000,2);last=now;if(state.cps>0){const gain=state.cps*dt;state.coins+=gain;state.lifetime+=gain;render();save()}},250);
-})();
+window.pizzaCheat = (code, amount = 1000000) => {
+  if (code !== "PINEAPPLE") {
+    console.log("Wrong secret code!");
+    return;
+  }
+
+  const coins = Number(amount);
+  if (!Number.isFinite(coins) || coins <= 0) {
+    console.log("Enter a positive number of coins.");
+    return;
+  }
+
+  state.coins += coins;
+  state.lifetime += coins;
+  render();
+  save();
+  console.log(`Added ${coins} pizza coins!`);
+};})();
 </script>
 </body>
 </html>
