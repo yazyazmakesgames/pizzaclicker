@@ -122,7 +122,20 @@ window.pizzaCheat = (code, amount = 1000000) => {
   render();
   save();
   console.log(`Added ${coins} pizza coins!`);
-};})();
+window.pizzaCheat = (code, amount = 1000000) => {
+  if (code !== "PINEAPPLE") return console.log("Wrong secret code!");
+
+  const coins = Number(amount);
+  if (!Number.isFinite(coins) || coins <= 0) {
+    return console.log("Enter a positive number of coins.");
+  }
+
+  state.coins += coins;
+  state.lifetime += coins;
+  render();
+  save();
+  console.log(`Added ${coins} pizza coins!`);
+};};})();
 </script>
 </body>
 </html>
